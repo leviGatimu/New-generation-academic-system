@@ -4,12 +4,13 @@ session_start();
 require 'config/db.php';
 
 $error = '';
+
 // Handle Login Logic
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
     
-    // We check all users regardless of role button clicked
+    // The query remains the same—it finds the user regardless of their role
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
@@ -19,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['full_name'];
 
-        // Redirect Logic
+        // Automatic Redirect based on the role found in the DB
         $destinations = [
             'admin' => 'admin/dashboard.php',
             'teacher' => 'teacher/dashboard.php',
@@ -54,9 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div>
             <div class="school-title">New Generation Academy</div>
             <p class="school-desc">
-                Welcome to the official <strong>Academic</strong> system. 
-                Manage results, track attendance, and monitor student growth in real-time.
-                Empowering the future leaders of Rwanda through technology and excellence.
+                Welcome to the official <strong>Academic Bridge</strong>. 
+                A unified system for results, attendance, and growth tracking.
             </p>
             <ul class="feature-list">
                 <li>Real-time Academic Reports</li>
@@ -76,16 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             </div>
 
-            <div class="role-tabs">
-                <div class="role-tab active" onclick="setRole('student')">Student</div>
-                <div class="role-tab" onclick="setRole('teacher')">Teacher</div>
-                <div class="role-tab" onclick="setRole('parent')">Parent</div>
-                <div class="role-tab" onclick="setRole('admin')">Admin</div>
-            </div>
-
             <div class="form-header">
-                <h2 id="login-title">Student Login</h2>
-                <p>Please enter your credentials to access the portal.</p>
+                <h2>Welcome Back</h2>
+                <p>Login to access your personalized dashboard.</p>
             </div>
 
             <?php if($error): ?>
@@ -95,19 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
 
             <form action="index.php" method="POST">
-                <input type="hidden" name="login_role" id="login_role" value="student">
-                
                 <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 <input type="password" name="password" class="form-control" placeholder="Password" required>
                 
-                <button type="submit" class="btn-login">Access Dashboard</button>
+                <button type="submit" class="btn-login">Sign In</button>
             </form>
             
             <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
-                <p style="color: #666; margin-bottom: 10px;">Don't have an account?</p>
+                <p style="color: #666; margin-bottom: 10px;">New student or parent?</p>
                 <a href="activate.php" style="text-decoration: none;">
-                    <button style="background: white; border: 2px solid var(--primary-orange); color: var(--primary-orange); padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s; width: 100%;">
-                        Register (Activate Account)
+                    <button style="background: white; border: 2px solid #FF6600; color: #FF6600; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">
+                        Activate Account
                     </button>
                 </a>
             </div>
@@ -117,26 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </p>
         </div>
     </div>
-
 </div>
-
-<script>
-    function setRole(role) {
-        // 1. Update Buttons
-        document.querySelectorAll('.role-tab').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-
-        // 2. Update Title
-        const titleMap = {
-            'student': 'Student Login',
-            'teacher': 'Teacher Portal',
-            'parent': 'Parent Access',
-            'admin': 'Admin Control'
-        };
-        document.getElementById('login-title').innerText = titleMap[role];
-        document.getElementById('login_role').value = role;
-    }
-</script>
-
 </body>
 </html>

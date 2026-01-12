@@ -170,7 +170,7 @@ function getTimeLeft($end_time) {
 </head>
 <body>
 
-<?php include '../includes/preloader.php'; ?>
+
 
 <nav class="top-navbar">
     <a href="dashboard.php" class="nav-brand">

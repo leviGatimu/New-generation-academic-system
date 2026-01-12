@@ -98,7 +98,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p style="color: #666; margin-bottom: 10px;">New student or parent?</p>
                 <a href="activate.php" style="text-decoration: none;">
                     <button style="background: white; border: 2px solid #FF6600; color: #FF6600; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">
-                        Activate Account
+                        Activate Student Account
+                    </button><br><br>
+                </a>
+                <a href="parent-register.php">
+                    <button style="background: white; border: 2px solid #FF6600; color: #FF6600; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">
+                        Activate Parent Account
                     </button>
                 </a>
             </div>

@@ -142,7 +142,7 @@ $subjects = $sub_stmt->fetchAll();
 </head>
 <body>
 
-<?php include '../includes/preloader.php'; ?>
+
 
 <nav class="top-navbar">
     <a href="dashboard.php" class="nav-brand">

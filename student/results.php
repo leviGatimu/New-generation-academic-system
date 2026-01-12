@@ -169,7 +169,7 @@ if($term_average < 50) $avg_color = '#ff4d4f'; // Red
 </head>
 <body>
 
-<?php include '../includes/preloader.php'; ?>
+
 
 <nav class="top-navbar">
     <a href="dashboard.php" class="nav-brand">

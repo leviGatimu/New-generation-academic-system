@@ -12,7 +12,8 @@ $student_id = $_SESSION['user_id'];
 
 // 1. Fetch Student/Class Info
 // We join with classes table to get the human-readable class name
-$stmt = $pdo->prepare("SELECT u.full_name, st.admission_number, c.class_name, c.class_id 
+// 1. Fetch Student/Class Info & Parent Code
+$stmt = $pdo->prepare("SELECT u.full_name, st.admission_number, st.parent_access_code, c.class_name, c.class_id 
                        FROM users u 
                        JOIN students st ON u.user_id = st.student_id 
                        JOIN classes c ON st.class_id = c.class_id 
@@ -197,6 +198,35 @@ $subject_count = $sub_stmt->fetchColumn();
         </div>
     </div>
 </div>
+<div class="white-card" style="border-top: 4px solid var(--primary);">
+    <h3 style="margin-top:0; color: var(--dark); font-weight: 800;">
+        <i class='bx bxs-user-voice' style="color:var(--primary);"></i> Parent Access
+    </h3>
+    <p style="color:#637381; font-size: 0.85rem;">Give this code to your parents so they can create an account and track your progress.</p>
+    
+    <div style="background: #fff0e6; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--primary); text-align: center;">
+        <span style="display:block; color:var(--primary); font-size:0.7rem; font-weight:700; letter-spacing: 1px; margin-bottom: 5px;">ACTIVATION CODE</span>
+        <span style="font-size:1.5rem; font-weight:800; color:var(--dark); letter-spacing: 2px;">
+            <?php echo $me['parent_access_code'] ?: 'ALREADY LINKED'; ?>
+        </span>
+    </div>
 
+    <?php if($me['parent_access_code']): ?>
+        <button onclick="copyCode('<?php echo $me['parent_access_code']; ?>')" class="btn-link" style="background:#f4f6f8; color:var(--dark);">
+            <i class='bx bx-copy'></i> Copy Code
+        </button>
+    <?php else: ?>
+        <div style="text-align:center; color:#00ab55; font-size:0.85rem; font-weight:600;">
+            <i class='bx bxs-check-shield'></i> Parent account is active
+        </div>
+    <?php endif; ?>
+</div>
+
+<script>
+function copyCode(code) {
+    navigator.clipboard.writeText(code);
+    alert("Code copied to clipboard! Send this to your parents.");
+}
+</script>
 </body>
 </html>

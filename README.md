@@ -11,6 +11,16 @@
 ---
 
 ## 📸 Screenshots & Features
+<img width="1905" height="893" alt="image" src="https://github.com/user-attachments/assets/faa27dd4-f4b1-4d7d-974e-f5eda08e8f01" />
+<img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/c908799a-cd97-46f1-9eb2-c170547a4162" />
+<img width="1890" height="892" alt="Screenshot 2026-01-13 022719" src="https://github.com/user-attachments/assets/db966378-fc8a-41f1-86d8-4188bbb14106" />
+<img width="1904" height="898" alt="image" src="https://github.com/user-attachments/assets/aa9cceae-994e-4cf1-a03c-f1911c155426" />
+<img width="1916" height="903" alt="image" src="https://github.com/user-attachments/assets/a97d0766-bb0a-4468-a95d-5b5f8cd8a943" />
+
+
+
+
+
 
 ### 1. 🌓 **Smart Dark/Light Mode**
 A custom JavaScript engine (`theme.js`) detects user preference and saves it to LocalStorage. It persists across all pages—from the Login screen to the Report Card generator.

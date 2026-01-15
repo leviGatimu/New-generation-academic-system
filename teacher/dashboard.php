@@ -205,6 +205,9 @@ $total_courses = count($allocations);
         <a href="take_attendance.php" class="nav-item">
             <i class='bx bxs-file-doc'></i> <span>Attendance</span>
         </a>
+        <a href="profile.php" class="nav-item">
+    <i class='bx bxs-user-circle'></i> <span>Profile</span>
+</a>
     </div>
 
     <div class="nav-user">

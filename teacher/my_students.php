@@ -158,6 +158,9 @@ if ($view_student_id && $selected_subject_id) {
         <a href="view_all_marks.php" class="nav-item"><i class='bx bxs-edit'></i> <span>Grading</span></a>
         <a href="messages.php" class="nav-item"><i class='bx bxs-chat'></i> <span>Chat</span></a>
         <a href="take_attendance.php" class="nav-item"><i class='bx bxs-file-doc'></i> <span>Attendance</span></a>
+        <a href="profile.php" class="nav-item">
+    <i class='bx bxs-user-circle'></i> <span>Profile</span>
+</a>
     </div>
     <div class="nav-user"><a href="../logout.php" class="btn-logout">Logout</a></div>
 </nav>

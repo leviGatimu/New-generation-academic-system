@@ -122,16 +122,35 @@ $my_classes = $class_stmt->fetchAll();
 
 <nav class="top-navbar">
     <a href="dashboard.php" class="nav-brand">
-        <div class="logo-box"><img src="../assets/images/logo.png" alt="NGA"></div>
+        <div class="logo-box">
+            <img src="../assets/images/logo.png" alt="NGA">
+        </div>
         <span class="nav-brand-text">Teacher Portal</span>
     </a>
+
     <div class="nav-menu">
-        <a href="dashboard.php" class="nav-item">Dashboard</a>
-        <a href="my_students.php" class="nav-item">Students</a>
-        <a href="assessments.php" class="nav-item">Assessments</a>
-        <a href="view_all_marks.php" class="nav-item active">Grading</a>
+        <a href="dashboard.php" class="nav-item">
+            <i class='bx bxs-dashboard'></i> <span>Dashboard</span>
+        </a>
+        <a href="my_students.php" class="nav-item">
+            <i class='bx bxs-user-detail'></i> <span>Students</span>
+        </a>
+        <a href="assessments.php" class="nav-item"> <i class='bx bxs-layer'></i> <span>Assessments</span>
+        </a>
+        <a href="view_all_marks.php" class="nav-item active">
+            <i class='bx bxs-edit'></i> <span>Grading</span>
+        </a>
+         <a href="messages.php" class="nav-item">
+            <i class='bx bxs-chat'></i> <span>Chat</span>
+        </a>
+        <a href="take_attendance.php" class="nav-item">
+            <i class='bx bxs-file-doc'></i> <span>Attendance</span>
+        </a>
     </div>
-    <a href="../logout.php" class="btn-logout">Logout</a>
+
+    <div class="nav-user">
+        <a href="../logout.php" class="btn-logout">Logout</a>
+    </div>
 </nav>
 
 <div class="main-content">

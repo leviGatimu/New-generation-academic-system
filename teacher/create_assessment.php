@@ -26,6 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // A. Insert Assessment Header
         $target = explode('_', $_POST['target_class_subject']);
+        $class_id = $target[0];
+        $subject_id = $target[1];
+        
         $status = isset($_POST['publish']) ? 'published' : 'draft';
         $start = str_replace('T', ' ', $_POST['start_time']);
         $end = str_replace('T', ' ', $_POST['end_time']);
@@ -35,11 +38,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         $stmt->execute([
-            $_POST['title'], $_POST['description'], $target[0], $target[1], $teacher_id, 
-            $start, $end, $_POST['duration'], $_POST['calculated_total_marks'], $_POST['type'], $status
+            $_POST['title'], 
+            $_POST['description'], 
+            $class_id, 
+            $subject_id, 
+            $teacher_id, 
+            $start, 
+            $end, 
+            $_POST['duration'], 
+            $_POST['calculated_total_marks'], 
+            $_POST['type'], 
+            $status
         ]);
         
         $assessment_id = $pdo->lastInsertId();
+
+        // === SYSTEM NOTIFICATION (Only if published) ===
+        if ($status === 'published') {
+            $announcement = "📢 New " . ucfirst($_POST['type']) . " Posted: " . $_POST['title'] . ". Due: " . date("d M H:i", strtotime($end));
+            
+            // Insert into the Group Chat
+            $alert = $pdo->prepare("INSERT INTO messages (sender_id, class_id, message, msg_type) VALUES (?, ?, ?, 'system')");
+            $alert->execute([$teacher_id, $class_id, $announcement]);
+        }
+        // ===============================================
 
         // B. Insert Questions & Options
         if (isset($_POST['questions']) && is_array($_POST['questions'])) {
@@ -54,7 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // 2. Save Options (Only for Multiple Choice)
                 if ($q['type'] === 'multiple_choice' && isset($q['options'])) {
                     foreach ($q['options'] as $opt_key => $opt_text) {
-                        // Determine if this option is the correct one (radio button value matches index)
                         $is_correct = (isset($q['correct_option']) && $q['correct_option'] == $opt_key) ? 1 : 0;
                         $opt_stmt->execute([$question_id, $opt_text, $is_correct]);
                     }
@@ -63,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $pdo->commit();
-        header("Location: assessments.php"); exit;
+        header("Location: assessments.php?msg=created"); exit;
 
     } catch (Exception $e) {
         $pdo->rollBack();

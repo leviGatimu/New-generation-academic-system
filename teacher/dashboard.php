@@ -198,6 +198,10 @@ $total_courses = count($allocations);
         <a href="view_all_marks.php" class="nav-item">
             <i class='bx bxs-edit'></i> <span>Grading</span>
         </a>
+        <a href="messages.php" class="nav-item">
+            <i class='bx bxs-chat'></i> <span>Chat</span>
+        </a>
+        
         <a href="take_attendance.php" class="nav-item">
             <i class='bx bxs-file-doc'></i> <span>Attendance</span>
         </a>

@@ -181,6 +181,7 @@ function getTimeLeft($end_time) {
         <a href="dashboard.php" class="nav-item"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
         <a href="academics.php" class="nav-item active"><i class='bx bxs-graduation'></i> <span>Academics</span></a>
         <a href="results.php" class="nav-item"><i class='bx bxs-spreadsheet'></i> <span>My Results</span></a>
+        <a href="messages.php" class="nav-item"><i class='bx bxs-chat'></i> Messages</a>
         <a href="attendance.php" class="nav-item"><i class='bx bxs-calendar-check'></i> <span>Attendance</span></a>
     </div>
     <div class="nav-user">

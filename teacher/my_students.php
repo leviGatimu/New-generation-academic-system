@@ -10,8 +10,23 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
 $teacher_id = $_SESSION['user_id'];
 $view_student_id = $_GET['student_id'] ?? null;
 $selected_subject_id = $_GET['subject_id'] ?? null;
+$message = "";
 
-// --- DATA FETCHING ---
+// --- 1. HANDLE ROLE ASSIGNMENT (New Feature) ---
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_role'])) {
+    $target_student_id = $_POST['student_id'];
+    $new_role = $_POST['class_role'];
+    
+    // Security: Ensure teacher creates this update
+    $stmt = $pdo->prepare("UPDATE students SET class_role = ? WHERE student_id = ?");
+    if ($stmt->execute([$new_role, $target_student_id])) {
+        // Redirect to refresh page and clear post data
+        $redirect_url = "?class_id=" . $_POST['redirect_class'] . "&subject_id=" . $_POST['redirect_subject'] . "&view_list=1";
+        header("Location: " . $redirect_url); exit;
+    }
+}
+
+// --- 2. DATA FETCHING (Existing) ---
 $sql = "SELECT DISTINCT c.class_id, c.class_name, s.subject_id, s.subject_name, cat.color_code
         FROM teacher_allocations ta
         JOIN classes c ON ta.class_id = c.class_id 
@@ -34,7 +49,7 @@ $chart_labels = [];
 $chart_scores = [];
 
 if ($view_student_id && $selected_subject_id) {
-    $stmt = $pdo->prepare("SELECT u.full_name, u.email, st.admission_number, c.class_name 
+    $stmt = $pdo->prepare("SELECT u.full_name, u.email, st.admission_number, c.class_name, st.class_role 
                            FROM users u JOIN students st ON u.user_id = st.student_id 
                            JOIN classes c ON st.class_id = c.class_id WHERE u.user_id = ?");
     $stmt->execute([$view_student_id]);
@@ -69,131 +84,102 @@ if ($view_student_id && $selected_subject_id) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* === THEME VARIABLES === */
-        :root { 
-            --primary: #FF6600; 
-            --primary-hover: #e65c00;
-            --dark: #212b36; 
-            --light-bg: #f4f6f8; 
-            --white: #ffffff; 
-            --border: #dfe3e8; 
-            --nav-height: 75px;
-        }
-        
-        html, body { 
-            background-color: var(--light-bg); 
-            margin: 0; padding: 0; 
-            font-family: 'Public Sans', sans-serif;
-            overflow-y: auto;
-        }
+        :root { --primary: #FF6600; --primary-hover: #e65c00; --dark: #212b36; --light-bg: #f4f6f8; --white: #ffffff; --border: #dfe3e8; --nav-height: 75px; }
+        html, body { background-color: var(--light-bg); margin: 0; padding: 0; font-family: 'Public Sans', sans-serif; overflow-y: auto; }
 
-        /* === TOP NAVIGATION BAR (Dashboard Match) === */
-        .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height);
-            background: var(--white); z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-bottom: 1px solid var(--border);
-            box-sizing: border-box;
-        }
-
+        /* === TOP NAVBAR === */
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height); background: var(--white); z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border); box-sizing: border-box; }
         .nav-brand { display: flex; align-items: center; gap: 15px; text-decoration: none; }
         .logo-box { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
         .logo-box img { width: 80%; height: 80%; object-fit: contain; }
         .nav-brand-text { font-size: 1.25rem; font-weight: 800; color: var(--dark); letter-spacing: -0.5px; }
-
         .nav-menu { display: flex; gap: 5px; align-items: center; }
-        .nav-item {
-            text-decoration: none; color: #637381; font-weight: 600; font-size: 0.95rem;
-            padding: 10px 15px; border-radius: 8px; transition: 0.2s;
-            display: flex; align-items: center; gap: 6px;
-        }
+        .nav-item { text-decoration: none; color: #637381; font-weight: 600; font-size: 0.95rem; padding: 10px 15px; border-radius: 8px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
         .nav-item:hover { color: var(--primary); background: rgba(255, 102, 0, 0.05); }
         .nav-item.active { background: var(--primary); color: white; }
-
-        .btn-logout {
-            text-decoration: none; color: #ff4d4f; font-weight: 700; font-size: 0.85rem;
-            padding: 8px 16px; border: 1.5px solid #ff4d4f; border-radius: 8px; transition: 0.2s;
-        }
+        .btn-logout { text-decoration: none; color: #ff4d4f; font-weight: 700; font-size: 0.85rem; padding: 8px 16px; border: 1.5px solid #ff4d4f; border-radius: 8px; transition: 0.2s; }
         .btn-logout:hover { background: #ff4d4f; color: white; }
 
-        /* === CONTENT LAYOUT === */
+        /* === CONTENT === */
         .main-content { margin-top: var(--nav-height); padding: 40px 5%; }
         .container { max-width: 1300px; margin: 0 auto; }
 
-        /* Structure Analytics */
+        /* Stats & Grid */
         .top-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
         .main-dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 25px; }
         .white-card { background: white; border-radius: 20px; border: 1px solid var(--border); padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-
         .summary-box { display: flex; justify-content: space-between; align-items: center; }
         .stat-label { font-size: 0.8rem; color: #637381; font-weight: 700; text-transform: uppercase; }
         .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--dark); display: block; }
         .stat-icon { font-size: 2.5rem; color: var(--primary); opacity: 0.15; }
 
-        /* List Styling */
+        /* Folders */
         .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .folder-card { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border); text-align: center; cursor: pointer; transition: 0.3s; }
         .folder-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .folder-icon { font-size: 3.5rem; color: #ffd1b3; margin-bottom: 10px; }
 
+        /* Table */
         .styled-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .styled-table th { text-align: left; padding: 12px; color: #637381; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        .styled-table td { padding: 12px; border-bottom: 1px solid #f4f6f8; font-size: 0.9rem; }
+        .styled-table td { padding: 12px; border-bottom: 1px solid #f4f6f8; font-size: 0.9rem; vertical-align: middle; }
         
         .btn-message { width: 100%; background: var(--dark); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+
+        /* === ROLE STYLES === */
+        .role-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; }
+        .role-Citizen { background: #f4f6f8; color: #637381; }
+        .role-President { background: #fff7e6; color: #b78103; border: 1px solid #ffe7ba; }
+        .role-Devotion { background: #e6f7ff; color: #0050b3; border: 1px solid #bae7ff; }
+        .role-Time { background: #f6ffed; color: #389e0d; border: 1px solid #d9f7be; } /* Time Keeper */
+
+        .btn-assign-role { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem; color: var(--dark); transition: 0.2s; }
+        .btn-assign-role:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .modal-open { display: flex; }
+        
+        .role-select { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid var(--border); font-size: 1rem; }
     </style>
 </head>
 <body>
 
-
 <nav class="top-navbar">
     <a href="dashboard.php" class="nav-brand">
-        <div class="logo-box">
-            <img src="../assets/images/logo.png" alt="NGA">
-        </div>
+        <div class="logo-box"><img src="../assets/images/logo.png" alt="NGA"></div>
         <span class="nav-brand-text">Teacher Portal</span>
     </a>
-
     <div class="nav-menu">
-        <a href="dashboard.php" class="nav-item">
-            <i class='bx bxs-dashboard'></i> <span>Overview</span>
-        </a>
-        <a href="my_students.php" class="nav-item active">
-            <i class='bx bxs-user-detail'></i> <span>My Students</span>
-        </a>
-       <a href="view_all_marks.php" class="nav-item">
-            <i class='bx bxs-edit'></i> <span>View Marks</span>
-        </a>
+        <a href="dashboard.php" class="nav-item"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
+        <a href="my_students.php" class="nav-item active"><i class='bx bxs-user-detail'></i> <span>Students</span></a>
+        <a href="assessments.php" class="nav-item"><i class='bx bxs-layer'></i> <span>Assessments</span></a>
+        <a href="view_all_marks.php" class="nav-item"><i class='bx bxs-edit'></i> <span>Grading</span></a>
+        <a href="messages.php" class="nav-item"><i class='bx bxs-chat'></i> <span>Chat</span></a>
+        <a href="take_attendance.php" class="nav-item"><i class='bx bxs-file-doc'></i> <span>Attendance</span></a>
     </div>
-
-    <div class="nav-user">
-        <a href="../logout.php" class="btn-logout">Logout</a>
-    </div>
+    <div class="nav-user"><a href="../logout.php" class="btn-logout">Logout</a></div>
 </nav>
 
 <div class="main-content">
     <div class="container">
 
         <?php if ($student_data): ?>
-            <a href="my_students.php" style="text-decoration:none; color:#637381; font-weight:600; display:flex; align-items:center; gap:5px; margin-bottom:20px;">
+            <a href="my_students.php?class_id=<?php echo $_GET['class_id'] ?? ''; ?>&subject_id=<?php echo $selected_subject_id; ?>&view_list=1" style="text-decoration:none; color:#637381; font-weight:600; display:flex; align-items:center; gap:5px; margin-bottom:20px;">
                 <i class='bx bx-arrow-back'></i> Back to List
             </a>
 
             <div class="top-stats-row">
                 <div class="white-card summary-box">
-                    <div><span class="stat-label">Current Average</span><span class="stat-val">84.2%</span></div>
-                    <i class='bx bx-trending-up stat-icon'></i>
+                    <div><span class="stat-label">Current Role</span><span class="stat-val" style="font-size:1.2rem; margin-top:5px;"><?php echo $student_data['class_role']; ?></span></div>
+                    <i class='bx bxs-badge-check stat-icon'></i>
                 </div>
                 <div class="white-card summary-box">
                     <div><span class="stat-label">Assessments</span><span class="stat-val"><?php echo count($subject_performance); ?></span></div>
                     <i class='bx bx-check-double stat-icon'></i>
                 </div>
-                <div class="white-card summary-box">
-                    <div><span class="stat-label">Class Rank</span><span class="stat-val">#4 / 35</span></div>
-                    <i class='bx bx-medal stat-icon'></i>
                 </div>
-            </div>
 
             <div class="main-dashboard-grid">
                 <div class="white-card">
@@ -203,6 +189,10 @@ if ($view_student_id && $selected_subject_id) {
                         </div>
                         <h2 style="margin:0; font-size:1.3rem;"><?php echo htmlspecialchars($student_data['full_name']); ?></h2>
                         <p style="color:#637381; font-size:0.9rem;"><?php echo $student_data['admission_number']; ?></p>
+                        
+                        <span class="role-badge role-<?php echo explode(' ', $student_data['class_role'])[0]; ?>" style="margin-top:10px;">
+                            <?php echo $student_data['class_role']; ?>
+                        </span>
                     </div>
                     <p style="font-size:0.9rem; color:#637381; margin-bottom: 20px;"><strong>Class:</strong> <?php echo $student_data['class_name']; ?></p>
                     <button class="btn-message"><i class='bx bxs-chat'></i> Send Message</button>
@@ -217,22 +207,61 @@ if ($view_student_id && $selected_subject_id) {
             </div>
 
         <?php elseif (isset($_GET['view_list'])): ?>
+            <?php 
+            // Check if current logged in teacher is the Class Teacher (Homeroom) for this class
+            // This determines if they can assign roles
+            $class_id = $_GET['class_id'];
+            $ct_stmt = $pdo->prepare("SELECT class_teacher_id FROM classes WHERE class_id = ?");
+            $ct_stmt->execute([$class_id]);
+            $ct_id = $ct_stmt->fetchColumn();
+            $is_homeroom = ($ct_id == $teacher_id);
+            ?>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h1 style="margin:0; font-size:1.5rem;"><?php echo $classes_data[$_GET['class_id']]['name']; ?> Students</h1>
+                <h1 style="margin:0; font-size:1.5rem;">
+                    <?php echo $classes_data[$class_id]['name']; ?> Students 
+                    <?php if($is_homeroom): ?><span style="font-size:0.8rem; background:#e6f7ff; color:#0050b3; padding:4px 8px; border-radius:10px; margin-left:10px;">Homeroom</span><?php endif; ?>
+                </h1>
                 <a href="my_students.php" style="color:var(--primary); text-decoration:none; font-weight:700;">Back to Classes</a>
             </div>
+            
             <div class="white-card">
                 <table class="styled-table">
-                    <thead><tr><th>Student Name</th><th>Adm No</th><th>Action</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Adm No</th>
+                            <th>Class Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <?php 
-                        $stmt = $pdo->prepare("SELECT u.user_id, u.full_name, st.admission_number FROM users u JOIN students st ON u.user_id = st.student_id WHERE st.class_id = ? ORDER BY u.full_name ASC");
-                        $stmt->execute([$_GET['class_id']]);
-                        foreach($stmt->fetchAll() as $st): ?>
+                        // Fetch students + roles
+                        $stmt = $pdo->prepare("SELECT u.user_id, u.full_name, st.admission_number, st.class_role FROM users u JOIN students st ON u.user_id = st.student_id WHERE st.class_id = ? ORDER BY u.full_name ASC");
+                        $stmt->execute([$class_id]);
+                        foreach($stmt->fetchAll() as $st): 
+                            $r_class = explode(' ', $st['class_role'])[0];
+                        ?>
                         <tr>
                             <td style="font-weight:700;"><?php echo htmlspecialchars($st['full_name']); ?></td>
                             <td><?php echo $st['admission_number']; ?></td>
-                            <td><a href="?student_id=<?php echo $st['user_id']; ?>&subject_id=<?php echo $_GET['subject_id']; ?>" style="color:var(--primary); text-decoration:none; font-weight:800;">OPEN FILE</a></td>
+                            <td>
+                                <span class="role-badge role-<?php echo $r_class; ?>">
+                                    <?php echo $st['class_role']; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:10px;">
+                                    <a href="?student_id=<?php echo $st['user_id']; ?>&subject_id=<?php echo $_GET['subject_id']; ?>&class_id=<?php echo $class_id; ?>" style="color:var(--primary); text-decoration:none; font-weight:800; font-size:0.85rem;">STATS</a>
+                                    
+                                    <?php if($is_homeroom): ?>
+                                    <button class="btn-assign-role" onclick="openRoleModal(<?php echo $st['user_id']; ?>, '<?php echo $st['class_role']; ?>', '<?php echo addslashes($st['full_name']); ?>')">
+                                        Assign Role
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -241,7 +270,7 @@ if ($view_student_id && $selected_subject_id) {
 
         <?php else: ?>
             <h1 style="margin-bottom:10px; font-size:1.5rem;">Managed Students</h1>
-            <p style="color:#637381; margin-bottom:40px;">Select a class to analyze student performance metrics.</p>
+            <p style="color:#637381; margin-bottom:40px;">Select a class to analyze metrics or assign roles (Homeroom only).</p>
             <div class="folder-grid">
                 <?php foreach($classes_data as $class_id => $data): ?>
                     <?php foreach($data['subjects'] as $sub): ?>
@@ -257,7 +286,33 @@ if ($view_student_id && $selected_subject_id) {
     </div>
 </div>
 
+<div id="roleModal" class="modal">
+    <form method="POST" class="modal-content">
+        <h3 style="color:var(--dark); margin-top:0;">Assign Class Role</h3>
+        <p id="studentNameDisplay" style="color:#637381; margin-bottom:15px; font-size:0.9rem;"></p>
+        
+        <input type="hidden" name="student_id" id="modalStudentId">
+        <input type="hidden" name="update_role" value="1">
+        <input type="hidden" name="redirect_class" value="<?php echo $_GET['class_id'] ?? ''; ?>">
+        <input type="hidden" name="redirect_subject" value="<?php echo $_GET['subject_id'] ?? ''; ?>">
+        
+        <label style="text-align:left; display:block; font-weight:bold; font-size:0.8rem; color:var(--dark);">Select Role</label>
+        <select name="class_role" id="modalRoleSelect" class="role-select">
+    <option value="Citizen">Citizen (Standard)</option>
+    <option value="President">Class President 👑</option>
+    <option value="Vice President">Vice President 🛡️</option> <option value="Devotion Leader">Devotion Leader 🙏</option>
+    <option value="Time Keeper">Time Keeper ⏰</option>
+</select>
+        
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button type="button" style="flex:1; background:#f4f6f8; color:#637381; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold;" onclick="document.getElementById('roleModal').classList.remove('modal-open')">Cancel</button>
+            <button type="submit" style="flex:1; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold;">Save Role</button>
+        </div>
+    </form>
+</div>
+
 <script>
+// Chart Logic (Only runs if student_data exists)
 <?php if ($student_data): ?>
 const ctx = document.getElementById('performanceChart').getContext('2d');
 new Chart(ctx, {
@@ -283,6 +338,14 @@ new Chart(ctx, {
     }
 });
 <?php endif; ?>
+
+// Modal Logic
+function openRoleModal(id, role, name) {
+    document.getElementById('modalStudentId').value = id;
+    document.getElementById('modalRoleSelect').value = role;
+    document.getElementById('studentNameDisplay').innerText = "Student: " + name;
+    document.getElementById('roleModal').classList.add('modal-open');
+}
 </script>
 </body>
 </html>

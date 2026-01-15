@@ -192,6 +192,9 @@ $announcements = $msg_stmt->fetchAll();
          <a href="class_ranking.php" class="nav-item">
             <i class='bx bxs-chat'></i> <span>Ranking</span>
         </a>
+        <a href="profile.php" class="nav-item">
+    <i class='bx bxs-user-circle'></i> <span>Profile</span>
+</a>
     </div>
     <a href="../logout.php" class="btn-logout">Logout</a>
 </nav>
@@ -327,6 +330,9 @@ $announcements = $msg_stmt->fetchAll();
                 </a>
                 <a href="messages.php" style="display:block; padding:10px; background:#f4f6f8; border-radius:8px; text-decoration:none; color:var(--dark); font-weight:600;">
                     💬 Class Chat
+                </a>
+                <a href="class_ranking.php" style="display:block; padding:10px; margin-top:5px; background:#f4f6f8; border-radius:8px; text-decoration:none; color:var(--dark); font-weight:600;">
+                    🏆 Leaderboard
                 </a>
             </div>
         </div>

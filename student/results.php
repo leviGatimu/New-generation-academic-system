@@ -171,6 +171,9 @@ ksort($grouped_results);
         <a href="results.php" class="nav-item active"><i class='bx bxs-spreadsheet'></i> <span>My Results</span></a>
         <a href="messages.php" class="nav-item"><i class='bx bxs-chat'></i> Messages</a>
         <a href="attendance.php" class="nav-item"><i class='bx bxs-calendar-check'></i> <span>Attendance</span></a>
+        <a href="profile.php" class="nav-item">
+    <i class='bx bxs-user-circle'></i> <span>Profile</span>
+</a>
     </div>
     <a href="../logout.php" class="btn-logout">Logout</a>
 </nav>

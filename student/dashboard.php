@@ -189,6 +189,7 @@ $announcements = $msg_stmt->fetchAll();
         <a href="academics.php" class="nav-item"><i class='bx bxs-graduation'></i> Academics</a>
         <a href="results.php" class="nav-item"><i class='bx bxs-bar-chart-alt-2'></i> My Results</a>
         <a href="messages.php" class="nav-item"><i class='bx bxs-chat'></i> Messages</a>
+        <a href="attendance.php" class="nav-item"><i class='bx bxs-calendar-check'></i> <span>Attendance</span></a>
          <a href="class_ranking.php" class="nav-item">
             <i class='bx bxs-chat'></i> <span>Ranking</span>
         </a>

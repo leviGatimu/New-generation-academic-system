@@ -162,15 +162,18 @@ ksort($grouped_results);
 
 <nav class="top-navbar">
     <a href="dashboard.php" class="nav-brand">
-        <div class="logo-box"><img src="../assets/images/logo.png" alt="NGA"></div>
-        <span class="nav-brand-text">Student Portal</span>
+        <div style="width:40px;"><img src="../assets/images/logo.png" alt="" style="width:100%;"></div>
+        Student Portal
     </a>
     <div class="nav-menu">
-        <a href="dashboard.php" class="nav-item"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
-        <a href="academics.php" class="nav-item"><i class='bx bxs-graduation'></i> <span>Academics</span></a>
-        <a href="results.php" class="nav-item active"><i class='bx bxs-spreadsheet'></i> <span>My Results</span></a>
+        <a href="dashboard.php" class="nav-item"><i class='bx bxs-dashboard'></i> Dashboard</a>
+        <a href="academics.php" class="nav-item"><i class='bx bxs-graduation'></i> Academics</a>
+        <a href="results.php" class="nav-item active"><i class='bx bxs-bar-chart-alt-2'></i> My Results</a>
         <a href="messages.php" class="nav-item"><i class='bx bxs-chat'></i> Messages</a>
         <a href="attendance.php" class="nav-item"><i class='bx bxs-calendar-check'></i> <span>Attendance</span></a>
+         <a href="class_ranking.php" class="nav-item">
+            <i class='bx bxs-chat'></i> <span>Ranking</span>
+        </a>
         <a href="profile.php" class="nav-item">
     <i class='bx bxs-user-circle'></i> <span>Profile</span>
 </a>

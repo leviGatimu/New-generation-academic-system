@@ -12,11 +12,12 @@ $assessment_id = $_GET['id'] ?? null;
 $current_student_id = $_GET['student_id'] ?? null;
 
 // 1. FETCH EXAM DETAILS
+// Note: Depending on your DB, ensure 'online_assessments' ID maps to 'assessment_id' in report cards
 $stmt = $pdo->prepare("SELECT oa.*, c.class_name, s.subject_name 
-                       FROM online_assessments oa
-                       JOIN classes c ON oa.class_id = c.class_id
-                       JOIN subjects s ON oa.subject_id = s.subject_id
-                       WHERE oa.id = ? AND oa.teacher_id = ?");
+                        FROM online_assessments oa
+                        JOIN classes c ON oa.class_id = c.class_id
+                        JOIN subjects s ON oa.subject_id = s.subject_id
+                        WHERE oa.id = ? AND oa.teacher_id = ?");
 $stmt->execute([$assessment_id, $teacher_id]);
 $exam = $stmt->fetch();
 
@@ -41,7 +42,6 @@ if (!$current_student_id && !empty($students)) {
 // 3. FETCH DATA FOR SELECTED STUDENT
 $current_submission = null;
 $student_answers = [];
-$mcq_score = 0; // Score from auto-graded questions
 
 if ($current_student_id) {
     $sub_stmt = $pdo->prepare("SELECT * FROM assessment_submissions WHERE assessment_id = ? AND student_id = ?");
@@ -64,14 +64,13 @@ $options = $opt_stmt->fetchAll();
 $opt_map = [];
 foreach($options as $opt) { $opt_map[$opt['question_id']][] = $opt; }
 
-// 5. HANDLE SAVE & SYNC
+// 5. HANDLE SAVE & SYNC (THE FIX IS HERE)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
     $total_score = 0;
     
-    // Calculate Score from POST data (Manual points) + MCQ calculation
+    // A. Calculate Score (Auto + Manual)
     foreach($questions as $q) {
         if ($q['question_type'] == 'multiple_choice') {
-            // Re-verify MCQ just in case
             $user_ans = $student_answers[$q['id']] ?? null;
             foreach ($opt_map[$q['id']] as $opt) {
                 if ($opt['is_correct'] && $opt['id'] == $user_ans) {
@@ -87,33 +86,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
 
     $teacher_comment = $_POST['teacher_comment'] ?? '';
     
-    // Update Submission
+    // B. Update the Online Submission Record
     $upd = $pdo->prepare("UPDATE assessment_submissions SET obtained_marks = ?, teacher_comment = ?, is_marked = 1 WHERE id = ?");
     $upd->execute([$total_score, $teacher_comment, $current_submission['id']]);
 
-    // IF "RECORD TO DATABASE" CHECKED
+    // C. SYNC TO MAIN REPORT CARD (student_marks table)
     if (isset($_POST['sync_to_records'])) {
-        // Insert into official exam_marks table
-        $exam_type = ucfirst($exam['type']); // e.g. "Exam", "Quiz"
         
-        $sync_sql = "INSERT INTO exam_marks (student_id, class_id, subject_id, exam_type, marks, recorded_at) 
-                     VALUES (?, ?, ?, ?, ?, NOW())
-                     ON DUPLICATE KEY UPDATE marks = VALUES(marks), recorded_at = NOW()";
-        $sync_stmt = $pdo->prepare($sync_sql);
-        $sync_stmt->execute([
-            $current_student_id,
-            $exam['class_id'],
-            $exam['subject_id'],
-            $exam_type,
-            $total_score
-        ]);
+        // 1. Check if mark exists in main table
+        $chk = $pdo->prepare("SELECT mark_id FROM student_marks WHERE student_id = ? AND assessment_id = ?");
+        $chk->execute([$current_student_id, $assessment_id]);
+        $exists = $chk->fetch();
+
+        if ($exists) {
+            // Update existing mark
+            $sync_stmt = $pdo->prepare("UPDATE student_marks SET score = ? WHERE mark_id = ?");
+            $sync_stmt->execute([$total_score, $exists['mark_id']]);
+        } else {
+            // Insert new mark
+            $sync_stmt = $pdo->prepare("INSERT INTO student_marks (student_id, assessment_id, subject_id, score) VALUES (?, ?, ?, ?)");
+            $sync_stmt->execute([
+                $current_student_id, 
+                $assessment_id, 
+                $exam['subject_id'], 
+                $total_score
+            ]);
+        }
         
-        $msg = "Graded and Recorded to Official Report Card!";
+        $msg = "Graded and Synced to Report Card!";
     } else {
-        $msg = "Grade Saved locally.";
+        $msg = "Grade Saved (Not Synced).";
     }
 
-    // Refresh to show updates
+    // Refresh
     header("Location: mark_online.php?id=$assessment_id&student_id=$current_student_id&msg=" . urlencode($msg));
     exit;
 }
@@ -128,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root { --primary: #FF6600; --dark: #212b36; --light: #f4f6f8; --border: #dfe3e8; }
-        body { background: var(--light); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        body { background: var(--light); height: 100vh; overflow: hidden; display: flex; flex-direction: column; font-family: 'Public Sans', sans-serif; margin: 0; }
 
         /* NAVBAR */
         .top-bar { height: 60px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
@@ -190,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
     
     <div class="student-sidebar">
         <div class="sidebar-header">
-            <input type="text" placeholder="Search student..." style="width:100%; padding:8px; border:1px solid #dfe3e8; border-radius:6px;">
+            <input type="text" placeholder="Search student..." style="width:100%; padding:8px; border:1px solid #dfe3e8; border-radius:6px; box-sizing: border-box;">
         </div>
         <?php foreach($students as $st): 
             $active = ($st['student_id'] == $current_student_id) ? 'active' : '';
@@ -239,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
             foreach($questions as $index => $q): 
                 $qid = $q['id'];
                 $user_ans = $student_answers[$qid] ?? null;
-                $points_earned = 0; // Default for manual
+                $points_earned = 0; 
             ?>
             <div class="q-item">
                 <span class="q-meta">Question <?php echo $index + 1; ?> • <?php echo $q['points']; ?> Points</span>
@@ -255,7 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
                                 if($opt['is_correct']) { $class = 'mcq-correct'; $is_correct = true; } 
                                 else { $class = 'mcq-wrong'; }
                             } elseif ($opt['is_correct']) {
-                                $class = 'mcq-correct'; // Show right answer
+                                $class = 'mcq-correct'; 
                             }
                         ?>
                         <div class="mcq-option <?php echo $class; ?>">
@@ -276,12 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
                         <input type="hidden" class="calc-points" value="<?php echo $points_earned; ?>">
                     </div>
 
-                <?php else: 
-                    // Retrieve previously saved manual score if available
-                    // Note: In a real advanced system we'd save per-question scores. 
-                    // Here we default to 0 for new grading, but ideally you'd parse previous total.
-                    // For simplicity in this flow, we start at 0 or the teacher re-enters.
-                ?>
+                <?php else: ?>
                     <div class="ans-box">
                         <p style="white-space: pre-wrap; margin:0;"><?php echo htmlspecialchars($user_ans ?? 'No answer.'); ?></p>
                     </div>
@@ -300,7 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_grades'])) {
 
             <div style="padding:25px;">
                 <label style="font-weight:700; display:block; margin-bottom:10px;">Teacher Feedback</label>
-                <textarea name="teacher_comment" rows="3" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px;"><?php echo htmlspecialchars($current_submission['teacher_comment'] ?? ''); ?></textarea>
+                <textarea name="teacher_comment" rows="3" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; box-sizing: border-box; font-family: inherit;"><?php echo htmlspecialchars($current_submission['teacher_comment'] ?? ''); ?></textarea>
             </div>
 
             <div class="action-bar">

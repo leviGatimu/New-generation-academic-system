@@ -30,9 +30,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 2. DELETE STUDENT
+    // 2. DELETE STUDENT
     if (isset($_POST['delete_student'])) {
-        $pdo->prepare("DELETE FROM users WHERE user_id = ?")->execute([$s_id]);
-        $message = "Student removed permanently."; $msg_type = "error";
+        try {
+            $pdo->beginTransaction();
+
+            // Delete related records first to satisfy foreign keys
+            $pdo->prepare("DELETE FROM assessment_submissions WHERE student_id = ?")->execute([$s_id]);
+            $pdo->prepare("DELETE FROM student_marks WHERE student_id = ?")->execute([$s_id]);
+            $pdo->prepare("DELETE FROM parent_student_link WHERE student_id = ?")->execute([$s_id]);
+            $pdo->prepare("DELETE FROM students WHERE student_id = ?")->execute([$s_id]);
+            
+            // Finally delete the user account
+            $pdo->prepare("DELETE FROM users WHERE user_id = ?")->execute([$s_id]);
+
+            $pdo->commit();
+            $msg_type = "error";
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $message = "Error deleting student: " . $e->getMessage();
+            $msg_type = "error";
+        }
     }
 
     // 3. PROMOTE STUDENT

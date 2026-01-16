@@ -35,6 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $error = "Invalid credentials. Please try again.";
     }
+    $request = $_SERVER['REQUEST_URI'];
+
+// If someone goes to /student/dashboard, this sends them to the real file
+if (file_exists(__DIR__ . '/..' . $request . '.php')) {
+    require __DIR__ . '/..' . $request . '.php';
+} else {
+    // This is your actual homepage logic
+    require __DIR__ . '/../index.php'; 
+}
 }
 ?>
 

@@ -1,7 +1,7 @@
 <?php
 // admin/dashboard.php
 session_start();
-require '../config/db.php';
+require __DIR__ . '/../../config/db.php';
 
 // 1. SECURITY CHECK
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {

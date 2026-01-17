@@ -4,10 +4,7 @@ session_start();
 require __DIR__ . '/../../config/db.php';
 
 // SECURITY CHECK
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
-    header("Location: ../index.php");
-    exit;
-}
+
 
 $teacher_id = $_SESSION['user_id'];
 $teacher_name = $_SESSION['name'];

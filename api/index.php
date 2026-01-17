@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'student' => '/student/dashboard.php',
     'parent'  => '/parent/dashboard.php'
 ];
-        
         if(array_key_exists($user['role'], $destinations)){
             header("Location: " . $destinations[$user['role']]);
             exit;

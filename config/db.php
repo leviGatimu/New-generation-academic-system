@@ -21,4 +21,4 @@ try {
     // This will display the error if it still fails
     die("Connection failed: " . $e->getMessage());
 }
-?
+?>

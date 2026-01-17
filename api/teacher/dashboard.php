@@ -1,7 +1,7 @@
 <?php
 // teacher/dashboard.php
 session_start();
-require __DIR__ . '../../../config/db.php';
+require __DIR__ . '/../../config/db.php';
 
 // SECURITY CHECK
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {

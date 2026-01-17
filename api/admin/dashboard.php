@@ -4,7 +4,13 @@ session_start();
 
 // FIX 1: Correct path to reach root config from api/admin/
 require __DIR__ . '/../../config/db.php';
+echo "<h1>Debug Mode</h1>";
+echo "Session ID: " . session_id() . "<br>";
+echo "User ID: " . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'NOT SET') . "<br>";
+echo "Role: " . (isset($_SESSION['role']) ? $_SESSION['role'] : 'NOT SET') . "<br>";
 
+// Stop the script here so it doesn't redirect you
+exit();
 // FIX 2: Corrected Security Check (Admin should check for 'admin' role)
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: /index.php"); 

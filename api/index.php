@@ -1,10 +1,21 @@
 <?php
-// api/index.php
+// 1. FORCE COOKIE SETTINGS FOR VERCEL
+// This tells the browser: "This session is valid for the WHOLE website (/)"
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',           // <--- THIS IS THE KEY FIX
+    'domain' => $_SERVER['HTTP_HOST'],
+    'secure' => true,        // Required for Vercel (HTTPS)
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
+// 2. NOW start the session
 session_start();
-// Use __DIR__ to ensure it always finds config regardless of Vercel's internal task path
+
 require __DIR__ . '/../config/db.php';
 
-$error = '';
+// ... rest of your existing logic ...
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
@@ -15,23 +26,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
+        // Now when we set these, the cookie will actually "stick"
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['full_name'];
 
-        // FIX: Use absolute paths (starting with /) so Vercel routes them correctly
-         $destinations = [
-        'admin'   => '/admin/dashboard.php',
-        'teacher' => '/teacher/dashboard.php',
-        'student' => '/student/dashboard.php',
-        'parent'  => '/parent/dashboard.php'
-        ];
-        if(array_key_exists($user['role'], $destinations)){
-            header("Location: " . $destinations[$user['role']]);
-            exit;
+        // 3. DEBUG: Uncomment this to verify before redirecting
+        // echo "Session saved! ID: " . $_SESSION['user_id']; exit;
+
+        // 4. REDIRECT (Use absolute paths for safety)
+        if ($user['role'] === 'admin') {
+            header("Location: /admin/dashboard.php");
+        } elseif ($user['role'] === 'teacher') {
+            header("Location: /teacher/dashboard.php");
+        } elseif ($user['role'] === 'student') {
+            header("Location: /student/dashboard.php");
+        } elseif ($user['role'] === 'parent') {
+            header("Location: /parent/dashboard.php");
         }
+        exit;
     } else {
-        $error = "Invalid credentials. Please try again.";
+        $error = "Invalid email or password";
     }
 }
 ?>

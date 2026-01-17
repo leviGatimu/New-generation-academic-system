@@ -1,4 +1,14 @@
 <?php
+// 1. FORCE COOKIE SETTINGS FOR VERCEL
+// This tells the browser: "This session is valid for the WHOLE website (/)"
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',           // <--- THIS IS THE KEY FIX
+    'domain' => $_SERVER['HTTP_HOST'],
+    'secure' => true,        // Required for Vercel (HTTPS)
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 // teacher/dashboard.php
 session_start();
 require __DIR__ . '/../../config/db.php';

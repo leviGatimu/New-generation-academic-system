@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
-<?php include '../includes/preloader.php'; ?>
+<?php include __DIR__ . '/../includes/preloader.php'; ?>
 <div class="main-container">
     
     <div class="info-section">

@@ -3,13 +3,11 @@
     "api/*.php": { "runtime": "vercel-php@0.7.1" },
     "admin/*.php": { "runtime": "vercel-php@0.7.1" },
     "teacher/*.php": { "runtime": "vercel-php@0.7.1" },
-    "parent/*.php": { "runtime": "vercel-php@0.7.1" },
     "student/*.php": { "runtime": "vercel-php@0.7.1" }
   },
   "routes": [
     { "src": "/admin/(.*)", "dest": "/admin/$1" },
     { "src": "/teacher/(.*)", "dest": "/teacher/$1" },
-    { "src": "/parent/(.*)", "dest": "/parent/$1" },
     { "src": "/student/(.*)", "dest": "/student/$1" },
     { "src": "/(.*)", "dest": "/api/$1" }
   ]

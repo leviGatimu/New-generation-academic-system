@@ -20,12 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['name'] = $user['full_name'];
 
         // FIX: Use absolute paths (starting with /) so Vercel routes them correctly
-        $destinations = [
-            'admin' => '/admin/dashboard.php',
-            'teacher' => '/teacher/dashboard.php',
-            'student' => '/student/dashboard.php',
-            'parent' => '/parent/dashboard.php'
-        ];
+       $destinations = [
+    'admin'   => '/admin/dashboard.php',
+    'teacher' => '/teacher/dashboard.php',
+    'student' => '/student/dashboard.php',
+    'parent'  => '/parent/dashboard.php'
+];
         
         if(array_key_exists($user['role'], $destinations)){
             header("Location: " . $destinations[$user['role']]);

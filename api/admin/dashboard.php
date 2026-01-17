@@ -1,9 +1,15 @@
 <?php
 // admin/dashboard.php
 session_start();
+
 require __DIR__ . '/../../config/db.php';
-
-
+// Temporary Debug
+if (!isset($_SESSION['user_id'])) { die("Error: No User ID found in session."); }
+if ($_SESSION['role'] !== 'student') { die("Error: Role mismatch. Your role is: " . $_SESSION['role']); }
+// 1. SECURITY CHECK
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../index.php"); exit;
+}
 
 $admin_id = $_SESSION['user_id'];
 $message = "";

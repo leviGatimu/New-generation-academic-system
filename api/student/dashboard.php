@@ -1,7 +1,9 @@
 <?php
 // api/student/dashboard.php
 session_start();
-
+// Temporary Debug
+if (!isset($_SESSION['user_id'])) { die("Error: No User ID found in session."); }
+if ($_SESSION['role'] !== 'student') { die("Error: Role mismatch. Your role is: " . $_SESSION['role']); }
 // FIX 1: Use absolute __DIR__ and go up TWO levels to find the root config
 require __DIR__ . '/../../config/db.php';
 

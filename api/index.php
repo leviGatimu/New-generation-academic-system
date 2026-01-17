@@ -1,14 +1,14 @@
 <?php
 // index.php
 session_start();
-require 'config/db.php';
+require '../config/db.php';
 
 $error = '';
 
 // Handle Login Logic
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+    $password = $_POST['password'];
     
     // The query remains the same—it finds the user regardless of their role
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
@@ -22,10 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Automatic Redirect based on the role found in the DB
         $destinations = [
-            'admin' => 'admin/dashboard.php',
-            'teacher' => 'teacher/dashboard.php',
-            'student' => 'student/dashboard.php',
-            'parent' => 'parent/dashboard.php'
+            'admin' => '../admin/dashboard.php',
+            'teacher' => '../teacher/dashboard.php',
+            'student' => '../student/dashboard.php',
+            'parent' => '../parent/dashboard.php'
         ];
         
         if(array_key_exists($user['role'], $destinations)){
@@ -35,15 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $error = "Invalid credentials. Please try again.";
     }
-    $request = $_SERVER['REQUEST_URI'];
-
-// If someone goes to /student/dashboard, this sends them to the real file
-if (file_exists(__DIR__ . '/..' . $request . '.php')) {
-    require __DIR__ . '/..' . $request . '.php';
-} else {
-    // This is your actual homepage logic
-    require __DIR__ . '/../index.php'; 
-}
 }
 ?>
 
@@ -53,11 +44,11 @@ if (file_exists(__DIR__ . '/..' . $request . '.php')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Bridge | New Generation Academy</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
-<?php include 'includes/preloader.php'; ?>
+<?php include '../includes/preloader.php'; ?>
 <div class="main-container">
     
     <div class="info-section">

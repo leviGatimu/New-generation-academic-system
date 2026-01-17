@@ -1,0 +1,38 @@
+[33mb116a94[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Using api/index.php as a bridge to save my sanity
+[33m14eb8bd[m fixed vercel 1.2
+[33meb3026a[m Move index to api folder
+[33m4946c95[m Fix: Move index.php to api folder and update vercel config
+[33mb8d082a[m Add vercel configuration for PHP
+[33me3549b2[m renewed admin dashboard page
+[33m93fd892[m fixed the viewing students on admin page
+[33md954e26[m added profile pages for students
+[33m77fe39c[m added profile page
+[33ma27821a[m update 2.0
+[33mdbf8fbe[m fixed the styling of results page for students
+[33m36afacb[m Fixed the student results page
+[33m1062344[m Update README.md
+[33m23b96aa[m Create README.md
+[33m4b583ea[m Added Parent Dashboard features: Dark Mode, Messaging, Homework, and Report Cards
+[33md2160a5[m added parents dashboard and parent registration logic and system
+[33m7b8ea80[m Added parent access code to student dashboard
+[33ma7d3d3d[m fixed login page & added parent page
+[33m60fd183[m Release 1.0
+[33mb116a94[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Using api/index.php as a bridge to save my sanity
+[33m14eb8bd[m fixed vercel 1.2
+[33meb3026a[m Move index to api folder
+[33m4946c95[m Fix: Move index.php to api folder and update vercel config
+[33mb8d082a[m Add vercel configuration for PHP
+[33me3549b2[m renewed admin dashboard page
+[33m93fd892[m fixed the viewing students on admin page
+[33md954e26[m added profile pages for students
+[33m77fe39c[m added profile page
+[33ma27821a[m update 2.0
+[33mdbf8fbe[m fixed the styling of results page for students
+[33m36afacb[m Fixed the student results page
+[33m1062344[m Update README.md
+[33m23b96aa[m Create README.md
+[33m4b583ea[m Added Parent Dashboard features: Dark Mode, Messaging, Homework, and Report Cards
+[33md2160a5[m added parents dashboard and parent registration logic and system
+[33m7b8ea80[m Added parent access code to student dashboard
+[33ma7d3d3d[m fixed login page & added parent page
+[33m60fd183[m Release 1.0

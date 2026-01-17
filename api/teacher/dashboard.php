@@ -5,7 +5,7 @@ require __DIR__ . '/../../config/db.php';
 
 // SECURITY CHECK
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
-    header("Location: ../index.php");
+    header("Location: dashboard.php");
     exit;
 }
 

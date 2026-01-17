@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['name'] = $user['full_name'];
 
         // FIX: Use absolute paths (starting with /) so Vercel routes them correctly
-        $destinations = [
+         $destinations = [
         'admin'   => '/admin/dashboard.php',
         'teacher' => '/teacher/dashboard.php',
         'student' => '/student/dashboard.php',
@@ -78,7 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <h2>Welcome Back</h2>
                 <p>Login to access your personalized dashboard.</p>
             </div>
-
+            <a href="setup_admin.php">
+                <button>Click here to set admin</button>
+            </a>
             <?php if($error): ?>
                 <div style="background:#fee2e2; color:#b91c1c; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center;">
                     <?php echo $error; ?>

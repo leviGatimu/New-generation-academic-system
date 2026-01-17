@@ -1,9 +1,14 @@
 <?php
+// api/student/dashboard.php
 session_start();
+
+// FIX 1: Use absolute __DIR__ and go up TWO levels to find the root config
 require __DIR__ . '/../../config/db.php';
 
+// FIX 2: Use an absolute root path (/) for the redirect
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../index.php"); exit;
+    header("Location: /index.php"); 
+    exit;
 }
 
 $student_id = $_SESSION['user_id'];
@@ -19,6 +24,11 @@ $stmt = $pdo->prepare("SELECT u.full_name, s.admission_number, s.class_id, s.cla
 $stmt->execute([$student_id]);
 $me = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Safety check: If no student record exists, stop here
+if (!$me) {
+    die("Student record not found. Please contact administration.");
+}
+
 $my_class_id = $me['class_id'];
 $my_role = $me['class_role'];
 
@@ -26,7 +36,6 @@ $my_role = $me['class_role'];
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) {
     if ($my_role === 'President' && !empty($_POST['msg'])) {
         $msg = "🔔 Class Announcement: " . trim($_POST['msg']);
-        // Send as 'system' type so it looks official
         $stmt = $pdo->prepare("INSERT INTO messages (sender_id, class_id, message, msg_type) VALUES (?, ?, ?, 'system')");
         if($stmt->execute([$student_id, $my_class_id, $msg])) {
             $message = "Announcement posted successfully!";
@@ -35,13 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) 
 }
 
 // --- 3. CALCULATE DASHBOARD STATS ---
-
-// A. Subject Count
 $sub_stmt = $pdo->prepare("SELECT COUNT(*) FROM class_subjects WHERE class_id = ?");
 $sub_stmt->execute([$my_class_id]);
 $subject_count = $sub_stmt->fetchColumn();
 
-// B. Overall Average
 $avg_query = "SELECT 
         (SUM(COALESCE(sm.score, 0)) + SUM(COALESCE(sub.obtained_marks, 0))) as total_score,
         (SUM(COALESCE(ca.max_score, 0)) + SUM(COALESCE(oa.total_marks, 0))) as total_max
@@ -59,18 +65,16 @@ $total_obtained = $stats['total_score'] ?? 0;
 $total_max = $stats['total_max'] ?? 0;
 $overall_avg = ($total_max > 0) ? round(($total_obtained / $total_max) * 100) : 0;
 
-// --- 4. SYSTEM LOGIC: FIND CLASS #1 (Top Performer) ---
+// --- 4. SYSTEM LOGIC: FIND CLASS #1 ---
 $top_student_id = null;
 $highest_avg = -1;
 
 if ($my_class_id) {
-    // Get all students in my class
     $peers_stmt = $pdo->prepare("SELECT student_id FROM students WHERE class_id = ?");
     $peers_stmt->execute([$my_class_id]);
     $all_students = $peers_stmt->fetchAll(PDO::FETCH_COLUMN);
 
     foreach ($all_students as $sid) {
-        // Calculate Avg for Peer
         $q1 = $pdo->prepare("SELECT SUM(score) as s, SUM(max_score) as m FROM student_marks m JOIN class_assessments a ON m.assessment_id = a.assessment_id WHERE m.student_id = ?");
         $q1->execute([$sid]);
         $r1 = $q1->fetch();

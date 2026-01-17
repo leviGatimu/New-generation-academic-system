@@ -1,7 +1,7 @@
 <?php
 // activate.php
 session_start();
-require 'config/db.php';
+require __DIR__ . '/../config/db.php';
 
 $step = 1;
 $error = '';

@@ -1,7 +1,7 @@
 <?php
 // parent_register.php
 session_start();
-require 'config/db.php';
+require __DIR__ . '/../config/db.php';
 
 $error = '';
 $success = '';

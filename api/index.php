@@ -1,16 +1,15 @@
 <?php
-// index.php
+// api/index.php
 session_start();
+// Use __DIR__ to ensure it always finds config regardless of Vercel's internal task path
 require __DIR__ . '/../config/db.php';
 
 $error = '';
 
-// Handle Login Logic
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     
-    // The query remains the same—it finds the user regardless of their role
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
@@ -20,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['full_name'];
 
-        // Automatic Redirect based on the role found in the DB
+        // FIX: Use absolute paths (starting with /) so Vercel routes them correctly
         $destinations = [
-            'admin' => '../admin/dashboard.php',
-            'teacher' => '../teacher/dashboard.php',
-            'student' => '../student/dashboard.php',
-            'parent' => '../parent/dashboard.php'
+            'admin' => '/admin/dashboard.php',
+            'teacher' => '/teacher/dashboard.php',
+            'student' => '/student/dashboard.php',
+            'parent' => '/parent/dashboard.php'
         ];
         
         if(array_key_exists($user['role'], $destinations)){
@@ -44,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Bridge | New Generation Academy</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
@@ -72,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <div style="text-align: center; margin-bottom: 20px;">
                 <div class="logo-area">
-                    <img src="assets/images/logo.png" alt="NGA Logo" class="school-logo fire-glow">
+                    <img src="/assets/images/logo.png" alt="NGA Logo" class="school-logo fire-glow">
                 </div>
             </div>
 
@@ -87,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form action="index.php" method="POST">
+            <form action="/" method="POST">
                 <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 <input type="password" name="password" class="form-control" placeholder="Password" required>
                 
@@ -96,12 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
                 <p style="color: #666; margin-bottom: 10px;">New student or parent?</p>
-                <a href="activate.php" style="text-decoration: none;">
+                <a href="/activate.php" style="text-decoration: none;">
                     <button style="background: white; border: 2px solid #FF6600; color: #FF6600; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">
                         Activate Student Account
                     </button><br><br>
                 </a>
-                <a href="parent-register.php">
+                <a href="/parent-register.php">
                     <button style="background: white; border: 2px solid #FF6600; color: #FF6600; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">
                         Activate Parent Account
                     </button>

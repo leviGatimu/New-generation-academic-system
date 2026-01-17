@@ -1,6 +1,6 @@
 <?php
 session_start();
-require __DIR__ . '/../config/db.php';
+require __DIR__ . '/../../config/db.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: ../index.php"); exit;

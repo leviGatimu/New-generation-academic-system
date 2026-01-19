@@ -1,9 +1,12 @@
 <?php
-// 1. VERCEL SESSION FIX (Must match login page)
+// api/admin/dashboard.php
+
+// 1. SESSION SETUP (Safer Version)
+// We removed 'domain' to prevent conflicts. 
+// This MUST match the login page exactly.
 session_set_cookie_params([
     'lifetime' => 0,
-    'path' => '/',           // Critical: Makes cookie valid for whole site
-    'domain' => $_SERVER['HTTP_HOST'],
+    'path' => '/',           // Critical: Allows sharing session across folders
     'secure' => true,        // Required for Vercel
     'httponly' => true,
     'samesite' => 'Lax'
@@ -11,15 +14,16 @@ session_set_cookie_params([
 session_start();
 
 // 2. SECURITY CHECK
-// If no user ID is set, OR if the role is not 'admin', redirect to login
+// If user is not logged in OR not an admin, send them back to login
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /index.php"); 
+    header("Location: /"); 
     exit;
 }
 
-// 3. CONNECT TO DATABASE
+// 3. DATABASE CONNECTION
 require __DIR__ . '/../../config/db.php';
 
+// Initialize variables
 $admin_id = $_SESSION['user_id'];
 $message = "";
 $msg_type = "";
@@ -30,10 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['broadcast_msg'])) {
     
     if (!empty($txt)) {
         try {
-            // Get all class IDs
             $classes = $pdo->query("SELECT class_id FROM classes")->fetchAll(PDO::FETCH_COLUMN);
-            
-            // Prepare the insert statement
             $stmt = $pdo->prepare("INSERT INTO messages (sender_id, class_id, message, msg_type) VALUES (?, ?, ?, 'system')");
             
             $count = 0;
@@ -53,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['broadcast_msg'])) {
 }
 
 // --- FETCH DASHBOARD DATA ---
+// We use try-catch to prevent crashing if tables are empty
 try {
     $student_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'student'")->fetchColumn();
     $teacher_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'")->fetchColumn();
@@ -66,10 +68,9 @@ try {
     $recent_broadcasts->execute([$admin_id]);
     $broadcasts = $recent_broadcasts->fetchAll();
 } catch (PDOException $e) {
-    // If DB fails (e.g., table not found), prevent crash
-    $student_count = 0;
-    $teacher_count = 0;
+    $student_count = 0; $teacher_count = 0; $parent_count = 0; $class_count = 0;
     $message = "Database Error: " . $e->getMessage();
+    $msg_type = "error";
 }
 ?>
 

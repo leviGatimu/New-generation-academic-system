@@ -1,40 +1,38 @@
 <?php
-// 1. FORCE GLOBAL COOKIE SETTINGS
-// This tells the browser: "This session is valid for the WHOLE website (/)"
+// api/index.php
+
+// 1. FORCE GLOBAL COOKIE SETTINGS (Must match dashboard)
 session_set_cookie_params([
     'lifetime' => 0,
-    'path' => '/',           // <--- THIS IS THE KEY FIX
+    'path' => '/',           // Critical: Makes cookie valid for whole site
     'domain' => $_SERVER['HTTP_HOST'],
-    'secure' => true,        // Required for Vercel (HTTPS)
+    'secure' => true,        // Required for Vercel
     'httponly' => true,
     'samesite' => 'Lax'
 ]);
-
-// 2. NOW start the session
 session_start();
 
 require __DIR__ . '/../config/db.php';
 
-// ... rest of your code ...
+$error = "";
 
+// 2. HANDLE LOGIN FORM SUBMISSION
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     
+    // Check Database
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
-        // Now when we set these, the cookie will actually "stick"
+        // 3. SET SESSION VARIABLES
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['full_name'];
 
-        // 3. DEBUG: Uncomment this to verify before redirecting
-        // echo "Session saved! ID: " . $_SESSION['user_id']; exit;
-
-        // 4. REDIRECT (Use absolute paths for safety)
+        // 4. REDIRECT TO DASHBOARD (Absolute Paths)
         if ($user['role'] === 'admin') {
             header("Location: /admin/dashboard.php");
         } elseif ($user['role'] === 'teacher') {

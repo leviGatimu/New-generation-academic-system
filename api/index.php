@@ -1,5 +1,5 @@
 <?php
-// 1. FORCE COOKIE SETTINGS FOR VERCEL
+// 1. FORCE GLOBAL COOKIE SETTINGS
 // This tells the browser: "This session is valid for the WHOLE website (/)"
 session_set_cookie_params([
     'lifetime' => 0,
@@ -15,7 +15,7 @@ session_start();
 
 require __DIR__ . '/../config/db.php';
 
-// ... rest of your existing logic ...
+// ... rest of your code ...
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);

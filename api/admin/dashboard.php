@@ -1,9 +1,17 @@
 <?php
-// api/admin/dashboard.php
+// Fix for Vercel Session Handling
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'],
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
 
-// FIX 1: Correct path to reach root config from api/admin/
 require __DIR__ . '/../../config/db.php';
+// ... rest of your code ...
 echo "<h1>Debug Mode</h1>";
 echo "Session ID: " . session_id() . "<br>";
 echo "User ID: " . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'NOT SET') . "<br>";
